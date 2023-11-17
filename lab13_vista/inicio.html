@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/core.css" class="template-customizer-core-css">
+    <link rel="stylesheet" href="/css/theme-default.css" class="template-customizer-theme-css">
+    <link rel="stylesheet" href="/css/demo.css">    <style>
+        #tablalista {
+            display: none;
+        }
+    </style>
+    <title>Bicicentro</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+</head>
+<body>
+<main>
+    <div class="container px-4 py-5">
+        <img src="logo.jpeg" alt="logo" style="height: 120px;">
+        <h1 class="pb-2 border-bottom">Bicicentro GTICS</h1>
+        <div class="d-flex justify-content-around mt-3 mb-4">
+            <a class="btn btn-primary" id="btnTrabajadores" href="#">Trabajadores</a>
+            <a class="btn btn-primary" id="btnSedes" href="#">Sedes</a>
+
+        </div>
+        <h3 class="pb-2 border-bottom" id="inicio"></h3>
+        <table class="table" id="tablalista">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Ver Detalles</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+
+        </table>
+
+    </div>
+    <div class="modal fade" id="modalDetalles" tabindex="-1" role="dialog" aria-labelledby="modalDetallesLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <!-- Contenido del modal -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDetallesLabel">Detalles del trabajador</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Contenido del cuerpo del modal -->
+                    <!-- Aquí puedes mostrar los detalles del trabajador -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    $(document).ready(function () {
+        function mostrarTabla() {
+            $("#tablalista").show();
+        }
+
+        function ocultarTabla() {
+            $("#tablalista").hide();
+        }
+
+        function mostrarTrabjadores(listaTrabajadores, titulo) {
+            $("#tablalista tbody").empty();
+            $("#inicio").text(titulo);
+
+            $.each(listaTrabajadores, function (index, trabajador) {
+                var fila = "<tr>";
+                fila += "<td>" + (index + 1) + "</td>";
+                fila += "<td>" + trabajador.nombres + trabajador.apellidos +"</td>";
+                fila += "<td>" + trabajador.correo + "</td>";
+                fila += `<td><button class='btn btn-info' >Detalles</button></td>`;
+                fila += "</tr>";
+                $("#tablalista tbody").append(fila);
+            });
+
+            mostrarTabla();
+        }
+
+        function mostrarSedes(listaSedes, titulo) {
+            $("#tablalista tbody").empty();
+            $("#inicio").text(titulo);
+
+            $.each(listaSedes, function (index, sede) {
+                var fila = "<tr>";
+                fila += "<td>" + (index + 1) + "</td>";
+                fila += "<td>" + sede.nombreSede + "</td>";
+                fila += "<td>" + sede.direccion + "</td>";
+                fila += `<td><button class='btn btn-info' >Detalles</button></td>`;
+                fila += "</tr>";
+                $("#tablalista tbody").append(fila);
+            });
+
+            mostrarTabla();
+        }
+
+        function mostrarDetalles(idtrabajador) {
+            // Realiza una solicitud AJAX
+            $.ajax({
+                url: 'http://localhost:8000/api/liga/' + idtrabajador,
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    // Muestra el modal
+                    $('#modalDetalles').modal('show');
+
+                    // Actualiza el contenido del cuerpo del modal con los detalles del trabajador
+                    $('#detallestrabajador').html(
+                        'ID del trabajador: ' + data.trabajador.id + '<br>' +
+                        'Nombre: ' + data.trabajador.nombre + '<br>' +
+                        'Estadio: ' + data.trabajador.estadio + '<br>' +
+                        'Liga: ' + data.liga + '<br>' +
+                        'Partidos jugados: ' + data.partidos_jugados + '<br>' +
+                        'Partidos ganados: ' + data.partidos_ganados + '<br>' +
+                        'Partidos perdidos: ' + data.partidos_perdidos + '<br>' +
+                        'Partidos empatados: ' + data.partidos_empatados + '<br>' +
+                        'Goles a favor: ' + data.goles_favor + '<br>' +
+                        'Goles en contra: ' + data.goles_contra + '<br>' +
+                        'Goles de diferencia: ' + data.goles_diferencia + '<br>' +
+                        'Puntos: ' + data.puntos
+                    );
+                },
+                error: function (error) {
+                    console.error('Error al obtener los detalles del trabajador:', error);
+                }
+            });
+        }
+
+        ocultarTabla();
+
+        $("#btnTrabajadores").click(function () {
+            $.ajax({
+                url: 'http://localhost:3030/trabajadores',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    const trabajadorsFiltrados = data;
+                    mostrarTrabjadores(trabajadorsFiltrados, 'Lista de Trabajadores');
+                },
+                error: function (error) {
+                    console.log('Error al obtener los datos:', error);
+                }
+            });
+        });
+
+        $("#btnSedes").click(function () {
+            $.ajax({
+                url: 'http://localhost:3030/sedes',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    const sedesFiltrados = data;
+                    mostrarSedes(sedesFiltrados, 'Lista de Sedes');
+                },
+                error: function (error) {
+                    console.log('Error al obtener los datos:', error);
+                }
+            });
+        });
+
+        $("#btnAcumulada").click(function () {
+            $.ajax({
+                type: 'GET',
+                url: "http://localhost:8000/api/liga",
+                success: function (response) {
+                    var trabajadorsAcumulados = sumarAcumulados(response);
+                    mostrarTrabjadores(trabajadorsAcumulados, "Lista Acumulada");
+                },
+                error: function (error) {
+                    console.log("Error al obtener los datos: " + error);
+                }
+            });
+        });
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
